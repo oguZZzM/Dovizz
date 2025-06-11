@@ -1,0 +1,83 @@
+// Bu sizin Prisma şema dosyanızdır,
+// daha fazla bilgi için dokümanlara bakın: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Kullanıcı hesapları için model
+model User {
+  id                 String              @id @default(cuid())
+  name               String?
+  email              String              @unique
+  password           String
+  role               String              @default("USER") // USER veya ADMIN
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  sentMessages       Message[]           @relation("SentMessages")
+  receivedMessages   Message[]           @relation("ReceivedMessages")
+  conversionHistories ConversionHistory[]
+}
+
+// Kullanıcılar arası mesajlar için model
+model Message {
+  id         String   @id @default(cuid())
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId String
+
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+// Döviz verilerini saklamak için model
+model Currency {
+  id        String   @id @default(cuid())
+  code      String   @unique // Döviz kodu (örn. USD, EUR)
+  name      String // Döviz adı (örn. US Dollar, Euro)
+  rates     Rate[] // Bu döviz için geçmiş kurlar
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Geçmiş kur verilerini saklamak için model
+model Rate {
+  id         String   @id @default(cuid())
+  value      Float // Döviz kuru değeri
+  change     Float // Değişim yüzdesi
+  increasing Boolean // Kur artıyor mu azalıyor mu
+  timestamp  DateTime @default(now())
+  currency   Currency @relation(fields: [currencyId], references: [id])
+  currencyId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([currencyId])
+  @@index([timestamp])
+}
+
+// Döviz çevirme geçmişini saklamak için model
+model ConversionHistory {
+  id              String   @id @default(cuid())
+  user            User     @relation(fields: [userId], references: [id])
+  userId          String
+  fromCurrency    String
+  toCurrency      String
+  amount          Float
+  convertedAmount Float
+  rate            Float
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
