@@ -49,9 +49,18 @@ const CurrencyCard: React.FC<CurrencyCardProps> = ({ currency }) => {
   // Flag image URL from flagcdn.com
   // Use a default flag icon if flagCode is 'unknown' or invalid
   const placeholderFlag = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMTUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjE1IiBmaWxsPSIjZjBmMGYwIi8+PC9zdmc+';
-  const flagUrl = flagCode && flagCode !== '' && flagCode !== 'unknown' && /^[a-z]{2}$/i.test(flagCode)
-    ? `https://flagcdn.com/w20/${flagCode.toLowerCase()}.png`
-    : placeholderFlag; // Boş veya geçersiz bayrak kodları için satır içi SVG yer tutucusu kullan
+
+  // Try to get flag from flagcdn.com first
+  let flagUrl = placeholderFlag;
+
+  // If we have a valid flagCode, try to use it
+  if (flagCode && flagCode !== '' && flagCode !== 'unknown' && /^[a-z]{2,3}$/i.test(flagCode)) {
+    flagUrl = `https://flagcdn.com/w20/${flagCode.toLowerCase()}.png`;
+  } 
+  // If no valid flagCode, try to use the currency code directly (some currency codes match country codes)
+  else if (code && code.length === 3) {
+    flagUrl = `https://flagcdn.com/w20/${code.toLowerCase().substring(0, 2)}.png`;
+  }
 
   // Döviz kartını render et
   // Render the currency card
@@ -64,20 +73,23 @@ const CurrencyCard: React.FC<CurrencyCardProps> = ({ currency }) => {
         <div>
           <div className="flex items-center gap-2">
             <div className="relative">
-              <Image 
-                src={flagUrl} 
-                alt={`${code} bayrağı`} 
-                width={20} 
-                height={15} 
-                className="rounded-sm transition-transform duration-300 hover:scale-110"
-                onError={(e) => {
-                  // Resim yüklenemezse, bir yer tutucu ile değiştir
-                  // If image fails to load, replace with a placeholder
-                  const target = e.target as HTMLImageElement;
-                  target.onerror = null; // Sonsuz döngüyü önle
-                  target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMTUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjE1IiBmaWxsPSIjZjBmMGYwIi8+PC9zdmc+';
-                }}
-              />
+              <div className="relative w-[20px] h-[15px] bg-gray-100 rounded-sm overflow-hidden">
+                <Image 
+                  src={flagUrl} 
+                  alt={`${code} bayrağı`} 
+                  width={20} 
+                  height={15} 
+                  className="rounded-sm transition-transform duration-300 hover:scale-110 object-cover"
+                  onError={(e) => {
+                    // Resim yüklenemezse, bir yer tutucu ile değiştir
+                    // If image fails to load, replace with a placeholder
+                    const target = e.target as HTMLImageElement;
+                    target.onerror = null; // Sonsuz döngüyü önle
+                    target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMTUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjE1IiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iMTAiIHk9IjEwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPj88L3RleHQ+PC9zdmc+';
+                    console.warn(`Failed to load flag image for ${code}`);
+                  }}
+                />
+              </div>
             </div>
             <h3 className="text-lg font-semibold">{code}</h3>
           </div>

@@ -1,20 +1,19 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { invalidateToken } from '@/lib/jwt';
 
 export async function POST() {
   try {
-    // Clear the auth cookie
-    const cookieStore = await cookies();
-    cookieStore.set({
-      name: 'auth_token',
-      value: '',
-      httpOnly: true,
-      path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 0, // Expire immediately
-    });
+    // Invalidate the JWT token
+    const success = invalidateToken();
 
-    return NextResponse.json({ message: 'Çıkış başarılı' });
+    if (success) {
+      return NextResponse.json({ message: 'Çıkış başarılı' });
+    } else {
+      return NextResponse.json(
+        { error: 'Çıkış sırasında bir hata oluştu' },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error('Çıkış hatası:', error);
     return NextResponse.json(
@@ -22,4 +21,9 @@ export async function POST() {
       { status: 500 }
     );
   }
+}
+
+// Also support GET requests for simple logout links
+export async function GET() {
+  return await POST();
 }

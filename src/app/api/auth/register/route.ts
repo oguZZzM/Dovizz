@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { signJwt } from '@/lib/jwt';
 
 export async function POST(request: Request) {
   try {
@@ -41,6 +43,25 @@ export async function POST(request: Request) {
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
+
+    // Create JWT token for automatic login
+    const token = await signJwt({ 
+      id: user.id, 
+      email: user.email,
+      role: user.role
+    }, '1d');
+
+    // Set auth cookie
+    const cookieStore = cookies();
+    cookieStore.set({
+      name: 'auth_token',
+      value: token,
+      httpOnly: true,
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24, // 1 day
+      sameSite: 'lax',
+    });
 
     return NextResponse.json(
       { message: 'Kullanıcı başarıyla oluşturuldu', user: userWithoutPassword },

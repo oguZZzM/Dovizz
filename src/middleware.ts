@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyJwt } from '@/lib/jwt';
+import { verifyJwt, refreshTokenIfNeeded } from '@/lib/jwt';
 
 // Korumalı rotaları ve gereken rolleri tanımla
 const protectedRoutes = [
@@ -46,8 +46,14 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
+      // Token'ı doğrula ve gerekirse yenile
+      const refreshedToken = await refreshTokenIfNeeded(token);
+
+      // Use the refreshed token if available
+      const tokenToVerify = refreshedToken || token;
+
       // Token'ı doğrula
-      const payload = await verifyJwt(token);
+      const payload = await verifyJwt(tokenToVerify);
       if (!payload) {
         const url = new URL(`/login?callbackUrl=${path}`, request.url);
         return NextResponse.redirect(url);

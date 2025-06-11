@@ -105,7 +105,7 @@ export default function Navbar() {
             {loading ? (
               <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
             ) : user ? (
-              <div className="ml-3 relative">
+              <div className="ml-3 relative flex items-center space-x-4">
                 <div>
                   <Link
                     href="/profile"
@@ -118,6 +118,15 @@ export default function Navbar() {
                     {user.name || user.email.split('@')[0]}
                   </Link>
                 </div>
+                <button
+                  onClick={async () => {
+                    await fetch('/api/auth/logout', { method: 'POST' });
+                    window.location.href = '/';
+                  }}
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition-colors"
+                >
+                  Çıkış Yap
+                </button>
               </div>
             ) : (
               <div className="flex space-x-4">
@@ -132,6 +141,12 @@ export default function Navbar() {
                   className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                 >
                   Kayıt Ol
+                </Link>
+                <Link
+                  href="/admin-login"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-purple-600 bg-purple-50 hover:bg-purple-100"
+                >
+                  Admin Girişi
                 </Link>
               </div>
             )}
@@ -266,6 +281,12 @@ export default function Navbar() {
                 className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
               >
                 Kayıt Ol
+              </Link>
+              <Link
+                href="/admin-login"
+                className="block px-4 py-2 text-base font-medium text-purple-600 hover:text-purple-800 hover:bg-purple-50"
+              >
+                Admin Girişi
               </Link>
             </div>
           )}

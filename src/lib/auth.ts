@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { prisma } from './prisma';
-import { verifyJwt } from './jwt';
+import { verifyJwt, refreshTokenIfNeeded } from './jwt';
 
 export interface UserSession {
   id: string;
@@ -12,10 +12,35 @@ export interface UserSession {
 export async function getCurrentUser() {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    let token = cookieStore.get('auth_token')?.value;
 
     if (!token) {
       return null;
+    }
+
+    // Token'ı doğrula ve gerekirse yenile
+    const refreshedToken = await refreshTokenIfNeeded(token);
+
+    // Use the refreshed token if available and update the cookie
+    if (refreshedToken && refreshedToken !== token) {
+      token = refreshedToken;
+
+      // Update the cookie with the new token
+      // This is safe because getCurrentUser is called from a Route Handler
+      try {
+        cookieStore.set({
+          name: 'auth_token',
+          value: refreshedToken,
+          httpOnly: true,
+          path: '/',
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 60 * 60 * 24, // 1 day
+          sameSite: 'lax',
+        });
+      } catch (cookieError) {
+        console.error('Error setting cookie in getCurrentUser:', cookieError);
+        // Continue with the refreshed token even if setting the cookie fails
+      }
     }
 
     // Token'ı doğrula

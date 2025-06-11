@@ -2,6 +2,8 @@ import { getCurrentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import CurrencyActions from './CurrencyActions';
+import AddCurrencyForm from './AddCurrencyForm';
 
 export default async function AdminCurrenciesPage() {
   const user = await getCurrentUser();
@@ -111,24 +113,10 @@ export default async function AdminCurrenciesPage() {
                           >
                             Görüntüle
                           </Link>
-                          <button
-                            className="text-yellow-600 hover:text-yellow-900"
-                            onClick={async () => {
-                              // This would be handled by a client component in a real implementation
-                              alert('Bu işlev istemci bileşeni gerektirir');
-                            }}
-                          >
-                            Güncelle
-                          </button>
-                          <button
-                            className="text-red-600 hover:text-red-900"
-                            onClick={async () => {
-                              // This would be handled by a client component in a real implementation
-                              alert('Bu işlev istemci bileşeni gerektirir');
-                            }}
-                          >
-                            Sil
-                          </button>
+                          <CurrencyActions 
+                            currencyCode={currency.code} 
+                            currencyName={currency.name} 
+                          />
                         </div>
                       </td>
                     </tr>
@@ -148,51 +136,7 @@ export default async function AdminCurrenciesPage() {
           </p>
         </div>
         <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
-          <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-            <div className="sm:col-span-2">
-              <label htmlFor="code" className="block text-sm font-medium text-gray-700">
-                Para Birimi Kodu
-              </label>
-              <div className="mt-1">
-                <input
-                  type="text"
-                  name="code"
-                  id="code"
-                  placeholder="USD"
-                  className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                />
-              </div>
-              <p className="mt-2 text-sm text-gray-500">3 karakterli kod (örn. USD, EUR)</p>
-            </div>
-
-            <div className="sm:col-span-4">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Para Birimi Adı
-              </label>
-              <div className="mt-1">
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  placeholder="US Dollar"
-                  className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <button
-              type="button"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              onClick={() => {
-                // This would be handled by a client component in a real implementation
-                alert('Bu işlev istemci bileşeni gerektirir');
-              }}
-            >
-              Para Birimi Ekle
-            </button>
-          </div>
+          <AddCurrencyForm />
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { CurrencyRate } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 // CurrencyConverter bileşeni için props arayüzü
 // Props interface for CurrencyConverter component
@@ -157,8 +158,16 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ currencies }) => 
             min="0.01"
             step="0.01"
             value={amount}
-            onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+            onChange={(e) => {
+              const value = parseFloat(e.target.value);
+              if (!isNaN(value) && value > 0) {
+                setAmount(value);
+              } else if (e.target.value === '') {
+                setAmount(0);
+              }
+            }}
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:shadow-sm"
+            placeholder="Miktar girin"
           />
         </div>
 
@@ -254,12 +263,24 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ currencies }) => 
             <span className="font-bold text-lg ml-2 text-blue-600">{convertedAmount.toFixed(4)}</span> {toCurrency}
           </p>
           <p className="text-center text-xs text-gray-500 mt-1">Gerçek zamanlı döviz kuru kullanılarak hesaplandı</p>
+          {isLoggedIn ? (
+            <p className="text-center text-xs text-green-600 mt-1">✓ Bu dönüşüm geçmişinize kaydedildi</p>
+          ) : (
+            <p className="text-center text-xs text-gray-500 mt-1">Dönüşüm geçmişini kaydetmek için <Link href="/login" className="text-blue-600 hover:underline">giriş yapın</Link></p>
+          )}
+        </div>
+      ) : amount <= 0 ? (
+        // Geçersiz miktar hatası
+        // Invalid amount error
+        <div className="mt-4 p-3 bg-red-50 rounded-md shadow-sm animate-fade-in">
+          <p className="text-center text-red-500">Lütfen sıfırdan büyük bir miktar girin.</p>
         </div>
       ) : (
-        // Hata durumu
-        // Error state
+        // Diğer hata durumları
+        // Other error states
         <div className="mt-4 p-3 bg-red-50 rounded-md shadow-sm animate-fade-in">
           <p className="text-center text-red-500">Çeviri yapılamadı. Lütfen geçerli değerler girin.</p>
+          <p className="text-center text-xs text-red-400 mt-1">Seçilen para birimleri için kur bilgisi bulunamadı veya bir hata oluştu.</p>
         </div>
       )}
     </div>

@@ -2,12 +2,13 @@ import { getCurrentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import UserActions from './UserActions';
 
 export default async function AdminUsersPage() {
-  const user = await getCurrentUser();
+  const currentUser = await getCurrentUser();
 
   // If not authenticated or not an admin, redirect to unauthorized
-  if (!user || user.role !== 'ADMIN') {
+  if (!currentUser || currentUser.role !== 'ADMIN') {
     redirect('/unauthorized');
   }
 
@@ -107,35 +108,12 @@ export default async function AdminUsersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2">
-                        <button
-                          className={`text-blue-600 hover:text-blue-900 ${user.role === 'ADMIN' ? 'hidden' : ''}`}
-                          onClick={async () => {
-                            // This would be handled by a client component in a real implementation
-                            alert('Bu işlev istemci bileşeni gerektirir');
-                          }}
-                        >
-                          Yönetici Yap
-                        </button>
-                        <button
-                          className={`text-green-600 hover:text-green-900 ${user.role === 'USER' ? 'hidden' : ''}`}
-                          onClick={async () => {
-                            // This would be handled by a client component in a real implementation
-                            alert('Bu işlev istemci bileşeni gerektirir');
-                          }}
-                        >
-                          Kullanıcı Yap
-                        </button>
-                        <button
-                          className="text-red-600 hover:text-red-900"
-                          onClick={async () => {
-                            // This would be handled by a client component in a real implementation
-                            alert('Bu işlev istemci bileşeni gerektirir');
-                          }}
-                        >
-                          Sil
-                        </button>
-                      </div>
+                      {/* Use the client component for user actions */}
+                      <UserActions 
+                        userId={user.id} 
+                        userRole={user.role} 
+                        currentUserId={currentUser.id} 
+                      />
                     </td>
                   </tr>
                 ))}
