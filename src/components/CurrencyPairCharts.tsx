@@ -53,6 +53,17 @@ const CurrencyPairCharts: React.FC = () => {
     GBP: 'gb',
   };
 
+  // Handle deprecated or special country codes
+  const deprecatedCountryCodes: Record<string, string> = {
+    'an': 'nl', // Netherlands Antilles -> Netherlands
+    'xp': 'eu', // Special code (possibly precious metals) -> European Union
+    'xo': 'us', // Special code (possibly oil) -> United States
+    'xc': 'eu', // Special code (possibly composite currency) -> European Union
+    'xd': 'us', // Special code (possibly digital currency) -> United States
+    'xa': 'eu', // Special code (possibly special drawing right) -> European Union
+    // Add other deprecated country codes here if needed
+  };
+
   useEffect(() => {
     const fetchPairsData = async () => {
       // Only show loading indicator on initial load, not on refreshes
@@ -174,19 +185,33 @@ const CurrencyPairCharts: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <div className="flex items-center">
                     <Image 
-                      src={`https://flagcdn.com/w20/${pairData.baseFlagCode.toLowerCase()}.png`}
+                      src={`https://flagcdn.com/w20/${deprecatedCountryCodes[pairData.baseFlagCode.toLowerCase()] || pairData.baseFlagCode.toLowerCase()}.png`}
                       alt={pairData.pair.split('/')[0]} 
                       width={20} 
                       height={15} 
                       className="rounded-sm transition-transform duration-300 hover:scale-110"
+                      onError={(e) => {
+                        // If image fails to load, replace with a placeholder
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null; // Prevent infinite loop
+                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMTUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjE1IiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iMTAiIHk9IjEwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPj88L3RleHQ+PC9zdmc+';
+                        console.warn(`Failed to load flag image for ${pairData.baseFlagCode}`);
+                      }}
                     />
                     <span className="mx-1">/</span>
                     <Image 
-                      src={`https://flagcdn.com/w20/${pairData.quoteFlagCode.toLowerCase()}.png`}
+                      src={`https://flagcdn.com/w20/${deprecatedCountryCodes[pairData.quoteFlagCode.toLowerCase()] || pairData.quoteFlagCode.toLowerCase()}.png`}
                       alt={pairData.pair.split('/')[1]} 
                       width={20} 
                       height={15} 
                       className="rounded-sm transition-transform duration-300 hover:scale-110"
+                      onError={(e) => {
+                        // If image fails to load, replace with a placeholder
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null; // Prevent infinite loop
+                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMTUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjE1IiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iMTAiIHk9IjEwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPj88L3RleHQ+PC9zdmc+';
+                        console.warn(`Failed to load flag image for ${pairData.quoteFlagCode}`);
+                      }}
                     />
                   </div>
                   <h3 className="font-semibold">{pairData.pair}</h3>

@@ -53,13 +53,30 @@ const CurrencyCard: React.FC<CurrencyCardProps> = ({ currency }) => {
   // Try to get flag from flagcdn.com first
   let flagUrl = placeholderFlag;
 
+  // Handle deprecated or special country codes
+  const deprecatedCountryCodes: Record<string, string> = {
+    'an': 'nl', // Netherlands Antilles -> Netherlands
+    'xp': 'eu', // Special code (possibly precious metals) -> European Union
+    'xo': 'us', // Special code (possibly oil) -> United States
+    'xc': 'eu', // Special code (possibly composite currency) -> European Union
+    'xd': 'us', // Special code (possibly digital currency) -> United States
+    'xa': 'eu', // Special code (possibly special drawing right) -> European Union
+    // Add other deprecated country codes here if needed
+  };
+
   // If we have a valid flagCode, try to use it
   if (flagCode && flagCode !== '' && flagCode !== 'unknown' && /^[a-z]{2,3}$/i.test(flagCode)) {
-    flagUrl = `https://flagcdn.com/w20/${flagCode.toLowerCase()}.png`;
+    const lowerFlagCode = flagCode.toLowerCase();
+    // Check if it's a deprecated country code and use the replacement if it is
+    const actualFlagCode = deprecatedCountryCodes[lowerFlagCode] || lowerFlagCode;
+    flagUrl = `https://flagcdn.com/w20/${actualFlagCode}.png`;
   } 
   // If no valid flagCode, try to use the currency code directly (some currency codes match country codes)
   else if (code && code.length === 3) {
-    flagUrl = `https://flagcdn.com/w20/${code.toLowerCase().substring(0, 2)}.png`;
+    const countryCode = code.toLowerCase().substring(0, 2);
+    // Check if it's a deprecated country code and use the replacement if it is
+    const actualCountryCode = deprecatedCountryCodes[countryCode] || countryCode;
+    flagUrl = `https://flagcdn.com/w20/${actualCountryCode}.png`;
   }
 
   // Döviz kartını render et
